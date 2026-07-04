@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.learning</groupId>
-    <artifactId>springboot-redis-mysql</artifactId>
+    <artifactId>springboot-redis-mysql-rabbitMQ</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>springboot-redis-mysql</name>
-    <description>springboot-redis-mysql</description>
+    <name>springboot-redis-mysql-rabbitMQ</name>
+    <description>springboot-redis-mysql-rabbitMQ</description>
     <url/>
     <licenses>
         <license/>

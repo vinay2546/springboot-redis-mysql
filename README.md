@@ -10,6 +10,8 @@
        +--> Redis (Cache)
        |
        +--> MySQL (Source of Truth)
+       |
+       +--> RabbitMQ (Messaging)
 
 ## Tech Stack
 
@@ -17,6 +19,7 @@
 -   Spring Data JPA
 -   MySQL
 -   Redis
+-   RabbitMQ
 -   Docker
 
 ------------------------------------------------------------------------
@@ -63,8 +66,45 @@ curl -X POST http://localhost:8080/users \
 ```
 
 ------------------------------------------------------------------------
+## 2. Create User via RabbitMQ
 
-## 2. Get User
+**POST** `/users/mq`
+
+Request
+
+``` json
+{
+  "name": "Vinay",
+  "email": "vinay@test.com"
+}
+```
+
+Example
+
+``` bash
+curl -X POST http://localhost:8080/users/mq \
+-H "Content-Type: application/json" \
+-d "{\"name\":\"Vinay\",\"email\":\"vinay@test.com\"}"
+```
+Processing Flow
+
+    Client
+       |
+    POST /users/mq
+       |
+    UserController
+       |
+    UserProducer
+       |
+    RabbitMQ (user.queue)
+       |
+    UserConsumer (@RabbitListener)
+       |
+    MySQL
+
+------------------------------------------------------------------------
+
+## 3. Get User
 
 **GET** `/users/{id}`
 
@@ -90,7 +130,7 @@ Flow
 
 ------------------------------------------------------------------------
 
-## 3. Get All Users
+## 4. Get All Users
 
 **GET** `/users`
 
@@ -100,7 +140,7 @@ curl http://localhost:8080/users
 
 ------------------------------------------------------------------------
 
-## 4. Delete User
+## 5. Delete User
 
 **DELETE** `/users/{id}`
 
@@ -221,6 +261,85 @@ SELECT * FROM users;
     Redis (HIT)
        |
     Response
+
+------------------------------------------------------------------------
+
+# RabbitMQ Integration
+
+## Architecture
+
+    Client
+       |
+    POST /users
+       |
+    Spring Boot Producer
+       |
+    RabbitTemplate
+       |
+    RabbitMQ Queue (user.queue)
+       |
+    @RabbitListener
+       |
+    Spring Boot Consumer
+       |
+    MySQL
+
+## RabbitMQ Configuration
+
+``` yaml
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+```
+
+## Queue
+
+    user.queue
+
+## Message Flow
+
+1.  Client calls **POST /users**
+2.  Controller invokes `UserProducer`
+3.  Producer publishes the `User` as JSON.
+4.  RabbitMQ stores the message.
+5.  `@RabbitListener` consumes the message.
+6.  Consumer persists the user into MySQL.
+
+## RabbitMQ Management
+
+Management UI:
+
+    http://localhost:15672
+
+Default credentials:
+
+    guest / guest
+
+Navigate to **Queues and Streams** to inspect or purge `user.queue`.
+
+## Producer
+
+    POST /users
+
+Publishes a message and returns immediately.
+
+## Consumer
+
+``` java
+@RabbitListener(queues = "user.queue")
+```
+
+Consumes messages asynchronously and saves them to MySQL.
+
+## Notes
+
+-   Use `Jackson2JsonMessageConverter` instead of Java serialization.
+-   Purge the queue after changing serialization format.
+-   RabbitMQ decouples the API from the database and enables
+    asynchronous processing.
 
 ------------------------------------------------------------------------
 
