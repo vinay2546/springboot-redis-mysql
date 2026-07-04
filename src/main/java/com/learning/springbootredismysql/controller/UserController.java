@@ -1,6 +1,7 @@
 package com.learning.springbootredismysql.controller;
 
 import com.learning.springbootredismysql.entity.User;
+import com.learning.springbootredismysql.producer.UserProducer;
 import com.learning.springbootredismysql.repository.interfaces.UserRepository;
 import com.learning.springbootredismysql.service.UserService;
 import org.springframework.web.bind.annotation.*;
@@ -14,8 +15,11 @@ public class UserController {
 
     private final UserService service;
 
-    public UserController(UserService service) {
+    private final UserProducer producer;
+
+    public UserController(UserService service,  UserProducer producer) {
         this.service = service;
+        this.producer = producer;
     }
 
     @PostMapping
@@ -37,5 +41,14 @@ public class UserController {
     public String delete(@PathVariable Long id) {
         service.delete(id);
         return "Deleted";
+    }
+
+    //MQ API
+    @PostMapping("/mq")
+    public String create(@RequestBody User user) {
+
+        producer.publish(user);
+
+        return "Message Published to RabbitMQ with user : " + user.getName();
     }
 }

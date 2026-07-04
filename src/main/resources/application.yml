@@ -1,4 +1,5 @@
 spring:
+
   datasource:
     url: jdbc:mysql://localhost:3306/springdb
     username: springuser
@@ -7,13 +8,18 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-
     show-sql: true
 
   data:
     redis:
       host: localhost
       port: 6379
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin
 
 server:
   port: 8080

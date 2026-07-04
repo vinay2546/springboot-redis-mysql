@@ -29,6 +29,19 @@ services:
     volumes:
       - redis-data:/data
 
+  rabbitmq:
+    image: rabbitmq:4.3.2-management
+    container_name: rabbitmq
+    restart: always
+
+    ports:
+      - "5672:5672"    # AMQP protocol port (apps connect here)
+      - "15672:15672"  # Management UI web console port
+
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+
 volumes:
   mysql-data:
   redis-data:
